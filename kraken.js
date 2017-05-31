@@ -1,6 +1,7 @@
-var request		= require('request');
-var crypto		= require('crypto');
-var querystring	= require('querystring');
+const crypto = require('crypto')
+const https = require('https')
+const parse_url = require('url').parse
+const querystring = require('querystring')
 
 /**
  * KrakenClient connects to the Kraken.com API
@@ -120,54 +121,63 @@ function KrakenClient(key, secret, otp) {
 	 * @param  {Object}   headers  Request headers
 	 * @param  {Object}   params   POST body
 	 * @param  {Function} callback A callback function to call when the request is complete
-	 * @return {Object}            The request object
 	 */
 	function rawRequest(url, headers, params, callback) {
 		// Set custom User-Agent string
-		headers['User-Agent'] = 'Kraken Javascript API Client';
+		headers['User-Agent'] = `Mozilla/4.0 (compatible; Kraken Node.js bot; ${process.platform}; Node.js/${process.version})`
 
-		var options = {
-			url: url,
+		var options
+
+		options = Object.assign({}, parse_url(url), {
 			method: 'POST',
 			headers: headers,
-			form: params,
-			timeout: config.timeoutMS
-		};
+			timeout: config.timeoutMS,
+			agent: false
+		})
 
-		var req = request.post(options, function(error, response, body) {
-			if(typeof callback === 'function') {
-				var data;
+		try {
+			const req = https.request(options, (res) => {
+				var data = ''
 
-				if(error) {
-					return callback.call(self, new Error('Error in server response: ' + JSON.stringify(error)), null);
-				}
+				res.setEncoding('utf8')
+				res.on('data', (chunk) => {
+					data += chunk
+				})
+				res.on('end', () => {
+					data = JSON.parse(data)
 
-				try {
-					data = JSON.parse(body);
-				}
-				catch(e) {
-					return callback.call(self, new Error('Could not understand response from server: ' + body), null);
-				}
-				//If any errors occured, Kraken will give back an array with error strings under
-				//the key "error". We should then propagate back the error message as a proper error.
-				if(data.error && data.error.length) {
-					var krakenError = null;
-					data.error.forEach(function(element) {
-						if (element.charAt(0) === "E") {
-							krakenError = element.substr(1);
-							return false;
+					var krakenError
+					if (data && data.error && data.error.length){
+						krakenError = null
+						data.error.forEach(function(element) {
+							if (element.charAt(0) === "E") {
+								krakenError = element.substr(1)
+								return false
+							}
+						})
+						if (krakenError) {
+							throw new Error('Kraken API returned error: ' + krakenError)
 						}
-					});
-					if (krakenError) {
-						return callback.call(self, new Error('Kraken API returned error: ' + krakenError), null);
+						else {
+							throw new Error(JSON.stringify(data.error))
+						}
 					}
-				}
-				else {
-					return callback.call(self, null, data);
-				}
-			}
-		});
-		return req;
+					else {
+						return callback.call(self, null, data)
+					}
+				})
+			})
+
+			req.on('error', (e) => {
+				throw e
+			})
+
+			req.write(querystring.stringify(params))
+			req.end()
+		}
+		catch(error){
+			return callback.call(self, error, null)
+		}
 	}
 
 	self.api		= api;
