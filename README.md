@@ -52,7 +52,7 @@ npm install --save @warren-bank/node-kraken-api
 #### Example:
 
 ```javascript
-const KrakenClient = require('kraken-api')
+const KrakenClient = require('@warren-bank/node-kraken-api')
 const kraken = new KrakenClient('api_key', 'api_secret')
 
 // Public API method: Get Ticker Info
