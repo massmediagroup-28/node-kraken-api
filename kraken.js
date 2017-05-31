@@ -152,7 +152,7 @@ function KrakenClient(key, secret, opt) {
         res.on('end', () => {
           data = JSON.parse(data)
 
-          var krakenError
+          var krakenError, error
           if (data && data.error && data.error.length){
             krakenError = null
             data.error.forEach(function(element) {
@@ -162,10 +162,12 @@ function KrakenClient(key, secret, opt) {
               }
             })
             if (krakenError) {
-              throw new Error('Kraken API returned error: ' + krakenError)
+							error = new Error('Kraken API returned error: ' + krakenError)
+							return callback.call(self, error, null)
             }
             else {
-              throw new Error(JSON.stringify(data.error))
+							error = new Error(JSON.stringify(data.error))
+              return callback.call(self, error, null)
             }
           }
           else {
@@ -174,8 +176,8 @@ function KrakenClient(key, secret, opt) {
         })
       })
 
-      req.on('error', (e) => {
-        throw e
+      req.on('error', (error) => {
+        return callback.call(self, error, null)
       })
 
       req.write(querystring.stringify(params))
