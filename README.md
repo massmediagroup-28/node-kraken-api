@@ -4,6 +4,12 @@ Node.js Client Library for the Kraken (kraken.com) API
 
 This is an asynchronous Promise-based Node.js client for the kraken.com API.
 
+#### Installation:
+
+```bash
+npm install --save @warren-bank/node-kraken-api
+```
+
 #### Usage:
 
 * class constructor:
