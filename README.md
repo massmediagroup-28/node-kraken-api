@@ -53,7 +53,7 @@ npm install --save @warren-bank/node-kraken-api
 
 ```javascript
 const KrakenClient = require('@warren-bank/node-kraken-api')
-const kraken = new KrakenClient('api_key', 'api_secret')
+const kraken = new KrakenClient('api_key', 'api_secret', {timeoutMS: 10000})
 
 // Public API method: Get Ticker Info
 kraken.api('Ticker', {"pair": 'GNOETH'})
