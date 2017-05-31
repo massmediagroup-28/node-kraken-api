@@ -10,13 +10,12 @@ const pair = 'GNOETH'
 var methods, i
 
 const call_API = function(method, params){
-  kraken.api(method, params, function(error, data) {
-    if(error) {
-      console.log("\n\n", `[Error] API method "${method}" produced the following error message:`, "\n", error.message)
-    }
-    else {
-      console.log("\n\n", `[Success] API method "${method}" returned the following response:`, "\n", JSON.stringify(data.result))
-    }
+  kraken.api(method, params)
+  .then((result) => {
+    console.log("\n\n", `[Success] API method "${method}" returned the following response:`, "\n", JSON.stringify(result))
+  })
+  .catch((error) => {
+    console.log("\n\n", `[Error] API method "${method}" produced the following error message:`, "\n", error.message)
   })
 }
 
