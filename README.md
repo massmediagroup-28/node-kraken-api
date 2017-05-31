@@ -13,7 +13,7 @@ npm install --save @warren-bank/node-kraken-api
 #### Usage:
 
 * class constructor:
-  * input: `api_key` (required), `api_secret` (required)
+  * input: `api_key` (required), `api_secret` (required), `config` (optional: `{otp, timeoutMS}`)
 * `api()` method:
   * input: `method` (required), `params` (varies by method)<br>
     where: `method` is one of the following values (as specified in the [official API docs](https://www.kraken.com/help/api) ):
