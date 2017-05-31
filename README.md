@@ -1,56 +1,82 @@
-Node Kraken
-===========
+### [Node.js Kraken API](https://github.com/warren-bank/node-kraken-api)
 
-NodeJS Client Library for the Kraken (kraken.com) API
+Node.js Client Library for the Kraken (kraken.com) API
 
-This is an asynchronous node js client for the kraken.com API.
+This is an asynchronous Promise-based Node.js client for the kraken.com API.
 
-It exposes all the API methods found here: https://www.kraken.com/help/api through the 'api' method:
+#### Usage:
 
-Example Usage:
+* class constructor:
+  * input: `api_key` (required), `api_secret` (required)
+* `api()` method:
+  * input: `method` (required), `params` (varies by method)<br>
+    where: `method` is one of the following values (as specified in the [official API docs](https://www.kraken.com/help/api) ):
+    * public:
+      * 'Time'
+      * 'Assets'
+      * 'AssetPairs'
+      * 'Ticker'
+      * 'Depth'
+      * 'Trades'
+      * 'Spread'
+      * 'OHLC'
+    * private:
+      * 'Balance'
+      * 'TradeBalance'
+      * 'OpenOrders'
+      * 'ClosedOrders'
+      * 'QueryOrders'
+      * 'TradesHistory'
+      * 'QueryTrades'
+      * 'OpenPositions'
+      * 'Ledgers'
+      * 'QueryLedgers'
+      * 'TradeVolume'
+      * 'AddOrder'
+      * 'CancelOrder'
+      * 'DepositMethods'
+      * 'DepositAddresses'
+      * 'DepositStatus'
+      * 'WithdrawInfo'
+      * 'Withdraw'
+      * 'WithdrawStatus'
+      * 'WithdrawCancel'
+  * output: Promise
+
+#### Example:
 
 ```javascript
-var KrakenClient = require('kraken-api');
-var kraken = new KrakenClient('api_key', 'api_secret');
+const KrakenClient = require('kraken-api')
+const kraken = new KrakenClient('api_key', 'api_secret')
 
-// Display user's balance
-kraken.api('Balance', null, function(error, data) {
-    if(error) {
-        console.log(error);
-    }
-    else {
-        console.log(data.result);
-    }
-});
+// Public API method: Get Ticker Info
+kraken.api('Ticker', {"pair": 'GNOETH'})
+.then((result) => {
+  console.log('Ticker (GNOETH):', result)
+})
+.catch((error) => {
+  console.log('Error:', error.message)
+})
 
-// Get Ticker Info
-kraken.api('Ticker', {"pair": 'XBTCXLTC'}, function(error, data) {
-    if(error) {
-        console.log(error);
-    }
-    else {
-        console.log(data.result);
-    }
-});
+// Private API method: Display user's balance
+kraken.api('Balance')
+.then((result) => {
+  console.log('Balance:', result)
+})
+.catch((error) => {
+  console.log('Error:', error.message)
+})
 ```
 
-**Update:**
+#### Credits:
 
-As of version 0.1.0, the callback passed to the *api* function conforms to the Node.js standard of
+* [Robert Myers](https://github.com/nothingisdead) wrote the original callback-based client library for Node.js: [npm-kraken-api](https://github.com/nothingisdead/npm-kraken-api)
 
-```javascript
-function(error, data) {
-    // ...
-}
-```
+* His work used the [PHP](https://github.com/payward/kraken-api-client) and [Python](https://github.com/veox/python3-krakenex) client libraries for references
 
-Thanks to @tehsenaus and @petermrg for pointing this out.
+#### Legal:
 
-Credit:
-
-I used the example php implementation at https://github.com/payward/kraken-api-client and the python implementation at https://github.com/veox/python3-krakenex as references.
-
-
-Feeling generous? Send me a fraction of a bitcoin!
-
-12X8GyUpfYxEP7sh1QaU4ngWYpzXJByQn5
+* copyright:
+  * [Robert Myers](https://github.com/nothingisdead)
+  * [Warren Bank](https://github.com/warren-bank)
+* license: [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)

@@ -24,23 +24,28 @@ function KrakenClient(key, secret, otp) {
 	 * This method makes a public or private API request.
 	 * @param  {String}   method   The API method (public or private)
 	 * @param  {Object}   params   Arguments to pass to the api call
-	 * @param  {Function} callback A callback function to be executed when the request is complete
-	 * @return {Object}            The request object
+	 * @return {Object}            Promise
 	 */
-	function api(method, params, callback) {
-		var methods = {
-			public: ['Time', 'Assets', 'AssetPairs', 'Ticker', 'Depth', 'Trades', 'Spread', 'OHLC'],
-			private: ['Balance', 'TradeBalance', 'OpenOrders', 'ClosedOrders', 'QueryOrders', 'TradesHistory', 'QueryTrades', 'OpenPositions', 'Ledgers', 'QueryLedgers', 'TradeVolume', 'AddOrder', 'CancelOrder', 'DepositMethods', 'DepositAddresses', 'DepositStatus', 'WithdrawInfo', 'Withdraw', 'WithdrawStatus', 'WithdrawCancel']
-		};
-		if(methods.public.indexOf(method) !== -1) {
-			return publicMethod(method, params, callback);
-		}
-		else if(methods.private.indexOf(method) !== -1) {
-			return privateMethod(method, params, callback);
-		}
-		else {
-			throw new Error(method + ' is not a valid API method.');
-		}
+	function api(method, params) {
+		return new Promise((resolve, reject) => {
+			var callback = function(error, data){
+				if (error) reject(error)
+				else resolve(data.result)
+			}
+			var methods = {
+				public: ['Time', 'Assets', 'AssetPairs', 'Ticker', 'Depth', 'Trades', 'Spread', 'OHLC'],
+				private: ['Balance', 'TradeBalance', 'OpenOrders', 'ClosedOrders', 'QueryOrders', 'TradesHistory', 'QueryTrades', 'OpenPositions', 'Ledgers', 'QueryLedgers', 'TradeVolume', 'AddOrder', 'CancelOrder', 'DepositMethods', 'DepositAddresses', 'DepositStatus', 'WithdrawInfo', 'Withdraw', 'WithdrawStatus', 'WithdrawCancel']
+			};
+			if(methods.public.indexOf(method) !== -1) {
+				publicMethod(method, params, callback)
+			}
+			else if(methods.private.indexOf(method) !== -1) {
+				privateMethod(method, params, callback)
+			}
+			else {
+				reject(new Error(method + ' is not a valid API method.'))
+			}
+		})
 	}
 
 	/**
@@ -165,7 +170,7 @@ function KrakenClient(key, secret, otp) {
 		return req;
 	}
 
-	self.api			= api;
+	self.api		= api;
 	self.publicMethod	= publicMethod;
 	self.privateMethod	= privateMethod;
 }
