@@ -162,11 +162,11 @@ function KrakenClient(key, secret, opt) {
               }
             })
             if (krakenError) {
-							error = new Error('Kraken API returned error: ' + krakenError)
-							return callback.call(self, error, null)
+              error = new Error('Kraken API returned error: ' + krakenError)
+              return callback.call(self, error, null)
             }
             else {
-							error = new Error(JSON.stringify(data.error))
+              error = new Error(JSON.stringify(data.error))
               return callback.call(self, error, null)
             }
           }
