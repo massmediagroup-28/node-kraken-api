@@ -18,35 +18,35 @@ npm install --save @warren-bank/node-kraken-api
   * input: `method` (required), `params` (varies by method)<br>
     where: `method` is one of the following values (as specified in the [official API docs](https://www.kraken.com/help/api) ):
     * public:
-      * 'Time'
-      * 'Assets'
-      * 'AssetPairs'
-      * 'Ticker'
-      * 'Depth'
-      * 'Trades'
-      * 'Spread'
-      * 'OHLC'
+      * 'Time', `{}`
+      * 'Assets', `{info, aclass, asset}`
+      * 'AssetPairs', `{info, pair}`
+      * 'Ticker', `{pair}`
+      * 'OHLC', `{pair, interval, since}`
+      * 'Depth', `{pair, count}`
+      * 'Trades', `{pair, since}`
+      * 'Spread', `{pair, since}`
     * private:
-      * 'Balance'
-      * 'TradeBalance'
-      * 'OpenOrders'
-      * 'ClosedOrders'
-      * 'QueryOrders'
-      * 'TradesHistory'
-      * 'QueryTrades'
-      * 'OpenPositions'
-      * 'Ledgers'
-      * 'QueryLedgers'
-      * 'TradeVolume'
-      * 'AddOrder'
-      * 'CancelOrder'
-      * 'DepositMethods'
-      * 'DepositAddresses'
-      * 'DepositStatus'
-      * 'WithdrawInfo'
-      * 'Withdraw'
-      * 'WithdrawStatus'
-      * 'WithdrawCancel'
+      * 'Balance', `{}`
+      * 'TradeBalance', `{aclass, asset}`
+      * 'OpenOrders', `{trades, userref}`
+      * 'ClosedOrders', `{trades, userref, start, end, ofs, closetime}`
+      * 'QueryOrders', `{trades, userref, txid}`
+      * 'TradesHistory', `{type, trades, start, end, ofs}`
+      * 'QueryTrades', `{txid, trades}`
+      * 'OpenPositions', `{txid, docalcs}`
+      * 'Ledgers', `{aclass, asset, type, start, end, ofs}`
+      * 'QueryLedgers', `{id}`
+      * 'TradeVolume', `{pair, "fee-info"}`
+      * 'AddOrder', `{pair, type, ordertype, price, price2, volume, leverage, oflags, starttm, expiretm, userref, validate, close: {ordertype, price, price2}}`
+      * 'CancelOrder', `{txid}`
+      * 'DepositMethods, `{aclass, asset}`'
+      * 'DepositAddresses', `{aclass, asset, method, new}`
+      * 'DepositStatus', `{aclass, asset, method}`
+      * 'WithdrawInfo', `{aclass, asset, key, amount}`
+      * 'Withdraw', `{aclass, asset, key, amount}`
+      * 'WithdrawStatus', `{aclass, asset, method}`
+      * 'WithdrawCancel', `{aclass, asset, refid}`
   * output: Promise
 
 #### Example:
