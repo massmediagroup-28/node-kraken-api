@@ -13,7 +13,7 @@ npm install --save @warren-bank/node-kraken-api
 #### Usage:
 
 * class constructor:
-  * input: `api_key` (required), `api_secret` (required), `config` (optional: `{otp, timeoutMS}`)
+  * input: `api_key` (required), `api_secret` (required), `config` (optional: `{otp, agent, timeout}`)
 * `api()` method:
   * input: `method` (required), `params` (varies by method)<br>
     where: `method` is one of the following values (as specified in the [official API docs](https://www.kraken.com/help/api) ):
@@ -53,7 +53,7 @@ npm install --save @warren-bank/node-kraken-api
 
 ```javascript
 const KrakenClient = require('@warren-bank/node-kraken-api')
-const kraken = new KrakenClient('api_key', 'api_secret', {timeoutMS: 10000})
+const kraken = new KrakenClient('api_key', 'api_secret', {timeout: 10000})
 
 // Public API method: Get Ticker Info
 kraken.api('Ticker', {"pair": 'GNOETH'})
@@ -85,4 +85,4 @@ kraken.api('Balance')
 * copyright:
   * [Robert Myers](https://github.com/nothingisdead)
   * [Warren Bank](https://github.com/warren-bank)
-* license: [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
+* license: [GPL-2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)

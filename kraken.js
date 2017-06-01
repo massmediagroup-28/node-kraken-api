@@ -7,7 +7,7 @@ const querystring = require('querystring')
  * KrakenClient connects to the Kraken.com API
  * @param {String} key    API Key
  * @param {String} secret API Secret
- * @param {String} [otp]  Two-factor password (optional) (also, doesn't work)
+ * @param {Object} [opt]  user-configurable options: {otp, agent, timeout}
  */
 function KrakenClient(key, secret, opt) {
   var self = this;
@@ -15,8 +15,9 @@ function KrakenClient(key, secret, opt) {
   var config = Object.assign({},
   {
     // default user-configurable options
-    otp: undefined,
-    timeoutMS: 5000
+    otp: undefined,  // Two-factor password
+    agent: false,
+    timeout: 5000
   },
   (opt || {}),
   {
@@ -137,8 +138,8 @@ function KrakenClient(key, secret, opt) {
     options = Object.assign({}, parse_url(url), {
       method: 'POST',
       headers: headers,
-      timeout: config.timeoutMS,
-      agent: false
+      timeout: config.timeout,
+      agent: config.agent
     })
 
     try {

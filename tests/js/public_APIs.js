@@ -2,7 +2,7 @@
 
 const KrakenClient = require('../../kraken')
 
-const kraken = new KrakenClient('my_key', 'my_secret')
+const kraken = new KrakenClient('my_key', 'my_secret', {timeout: 10000})
 
 // public API methods
 

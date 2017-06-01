@@ -1,6 +1,6 @@
 {
   "name": "@warren-bank/node-kraken-api",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "kraken.js",
   "description": "kraken.com API client library for Node.js",
   "contributors": [
