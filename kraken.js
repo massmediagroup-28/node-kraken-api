@@ -130,10 +130,15 @@ function KrakenClient(key, secret, opt) {
    * @param  {Function} callback A callback function to call when the request is complete
    */
   function rawRequest(url, headers, params, callback) {
+    var POST_data, options
+
+    POST_data = querystring.stringify(params)
+
     // Set custom User-Agent string
     headers['User-Agent'] = `Mozilla/4.0 (compatible; Kraken Node.js bot; ${process.platform}; Node.js/${process.version})`
 
-    var options
+    // set Content-Length
+    headers['Content-Length'] = Buffer.byteLength(POST_data, 'utf8')
 
     options = Object.assign({}, parse_url(url), {
       method: 'POST',
@@ -181,7 +186,7 @@ function KrakenClient(key, secret, opt) {
         return callback.call(self, error, null)
       })
 
-      req.write(querystring.stringify(params))
+      req.write(POST_data)
       req.end()
     }
     catch(error){
