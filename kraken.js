@@ -3,6 +3,11 @@ const https = require('https')
 const parse_url = require('url').parse
 const querystring = require('querystring')
 
+const kraken_api_methods = {
+  public: ['Time', 'Assets', 'AssetPairs', 'Ticker', 'Depth', 'Trades', 'Spread', 'OHLC'],
+  private: ['Balance', 'TradeBalance', 'OpenOrders', 'ClosedOrders', 'QueryOrders', 'TradesHistory', 'QueryTrades', 'OpenPositions', 'Ledgers', 'QueryLedgers', 'TradeVolume', 'AddOrder', 'CancelOrder', 'DepositMethods', 'DepositAddresses', 'DepositStatus', 'WithdrawInfo', 'Withdraw', 'WithdrawStatus', 'WithdrawCancel']
+}
+
 /**
  * KrakenClient connects to the Kraken.com API
  * @param {String} key    API Key
@@ -28,80 +33,23 @@ function KrakenClient(key, secret, opt) {
     secret: secret
   })
 
-  /**
-   * This method makes a public or private API request.
-   * @param  {String}   method   The API method (public or private)
-   * @param  {Object}   params   Arguments to pass to the api call
-   * @return {Object}            Promise
-   */
-  function api(method, params) {
-    return new Promise((resolve, reject) => {
-      var callback = function(error, data){
-        if (error) reject(error)
-        else resolve(data.result)
-      }
-      var methods = {
-        public: ['Time', 'Assets', 'AssetPairs', 'Ticker', 'Depth', 'Trades', 'Spread', 'OHLC'],
-        private: ['Balance', 'TradeBalance', 'OpenOrders', 'ClosedOrders', 'QueryOrders', 'TradesHistory', 'QueryTrades', 'OpenPositions', 'Ledgers', 'QueryLedgers', 'TradeVolume', 'AddOrder', 'CancelOrder', 'DepositMethods', 'DepositAddresses', 'DepositStatus', 'WithdrawInfo', 'Withdraw', 'WithdrawStatus', 'WithdrawCancel']
-      };
-      if(methods.public.indexOf(method) !== -1) {
-        publicMethod(method, params, callback)
-      }
-      else if(methods.private.indexOf(method) !== -1) {
-        privateMethod(method, params, callback)
-      }
-      else {
-        reject(new Error(method + ' is not a valid API method.'))
-      }
-    })
-  }
+  var unique_nonce, getMessageSignature, privateMethod, publicMethod, rawRequest, api
 
-  /**
-   * This method makes a public API request.
-   * @param  {String}   method   The API method (public or private)
-   * @param  {Object}   params   Arguments to pass to the api call
-   * @param  {Function} callback A callback function to be executed when the request is complete
-   * @return {Object}            The request object
-   */
-  function publicMethod(method, params, callback) {
-    params = params || {};
+  unique_nonce = new (function() {
+    this.generate = function() {
+      var now = Date.now()
+      this.counter = (now === this.last? this.counter + 1 : 0)
+      this.last = now
 
-    var path  = '/' + config.version + '/public/' + method;
-    var url    = config.url + path;
+      // add padding to nonce
+      var padding =
+        this.counter < 10   ? '000' :
+        this.counter < 100  ?  '00' :
+        this.counter < 1000 ?   '0' : ''
 
-    return rawRequest(url, {}, params, callback);
-  }
-
-  /**
-   * This method makes a private API request.
-   * @param  {String}   method   The API method (public or private)
-   * @param  {Object}   params   Arguments to pass to the api call
-   * @param  {Function} callback A callback function to be executed when the request is complete
-   * @return {Object}            The request object
-   */
-  function privateMethod(method, params, callback) {
-    params = params || {};
-
-    var path  = '/' + config.version + '/private/' + method;
-    var url    = config.url + path;
-
-    if(!params.nonce) {
-      params.nonce = new Date() * 1000; // spoof microsecond
-    }
-
-    if(config.otp !== undefined) {
-      params.otp = config.otp;
-    }
-
-    var signature = getMessageSignature(path, params, params.nonce);
-
-    var headers = {
-      'API-Key': config.key,
-      'API-Sign': signature
+      return (now + padding + this.counter)
     };
-
-    return rawRequest(url, headers, params, callback);
-  }
+  })()
 
   /**
    * This method returns a signature for a request as a Base64-encoded string
@@ -110,7 +58,7 @@ function KrakenClient(key, secret, opt) {
    * @param  {Integer} nonce   A unique, incrementing integer
    * @return {String}          The request signature
    */
-  function getMessageSignature(path, request, nonce) {
+  getMessageSignature = function(path, request, nonce) {
     var message  = querystring.stringify(request);
     var secret  = new Buffer(config.secret, 'base64');
     var hash  = new crypto.createHash('sha256');
@@ -123,13 +71,57 @@ function KrakenClient(key, secret, opt) {
   }
 
   /**
+   * This method makes a private API request.
+   * @param  {String}   method   The API method (public or private)
+   * @param  {Object}   params   Arguments to pass to the api call
+   * @param  {Function} callback A callback function to be executed when the request is complete
+   * @return {Object}            The request object
+   */
+  privateMethod = function(method, params, callback) {
+    params = params || {};
+
+    params.nonce = unique_nonce.generate()
+
+    if(config.otp !== undefined) {
+      params.otp = config.otp;
+    }
+
+    var path      = '/' + config.version + '/private/' + method;
+    var url       = config.url + path;
+    var signature = getMessageSignature(path, params, params.nonce);
+
+    var headers = {
+      'API-Key': config.key,
+      'API-Sign': signature
+    };
+
+    return rawRequest(url, headers, params, callback);
+  }
+
+  /**
+   * This method makes a public API request.
+   * @param  {String}   method   The API method (public or private)
+   * @param  {Object}   params   Arguments to pass to the api call
+   * @param  {Function} callback A callback function to be executed when the request is complete
+   * @return {Object}            The request object
+   */
+  publicMethod = function(method, params, callback) {
+    params = params || {};
+
+    var path  = '/' + config.version + '/public/' + method;
+    var url    = config.url + path;
+
+    return rawRequest(url, {}, params, callback);
+  }
+
+  /**
    * This method sends the actual HTTP request
    * @param  {String}   url      The URL to make the request
    * @param  {Object}   headers  Request headers
    * @param  {Object}   params   POST body
    * @param  {Function} callback A callback function to call when the request is complete
    */
-  function rawRequest(url, headers, params, callback) {
+  rawRequest = function(url, headers, params, callback) {
     var POST_data, options
 
     POST_data = querystring.stringify(params)
@@ -156,9 +148,18 @@ function KrakenClient(key, secret, opt) {
           data += chunk
         })
         res.on('end', () => {
-          data = JSON.parse(data)
+          var error
 
-          var krakenError, error
+          try {
+            data = JSON.parse(data)
+          }
+          catch(error) {
+            error.code = 'JSON-PARSE'
+            error.api_response = data
+            return callback.call(self, error, null)
+          }
+
+          var krakenError
           if (data && data.error && data.error.length){
             krakenError = null
             data.error.forEach(function(element) {
@@ -194,9 +195,31 @@ function KrakenClient(key, secret, opt) {
     }
   }
 
-  self.api    = api;
-  self.publicMethod  = publicMethod;
-  self.privateMethod  = privateMethod;
+  /**
+   * This method makes a public or private API request.
+   * @param  {String}   method   The API method (public or private)
+   * @param  {Object}   params   Arguments to pass to the api call
+   * @return {Object}            Promise
+   */
+  api = function(method, params) {
+    return new Promise((resolve, reject) => {
+      var callback = function(error, data){
+        if (error) reject(error)
+        else resolve(data.result)
+      }
+      if(kraken_api_methods.public.indexOf(method) !== -1) {
+        publicMethod(method, params, callback)
+      }
+      else if(kraken_api_methods.private.indexOf(method) !== -1) {
+        privateMethod(method, params, callback)
+      }
+      else {
+        reject(new Error(method + ' is not a valid API method.'))
+      }
+    })
+  }
+
+  self.api = api
 }
 
-module.exports = KrakenClient;
+module.exports = KrakenClient
